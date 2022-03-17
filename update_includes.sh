@@ -6,7 +6,7 @@ OUT=${1:-Envoy.includes}
 OUT_ABS=$(dirname $(realpath ${OUT}))
 
 # Find current bazel-cache
-BZOUTDIR="$(${BAZEL_EXE} info output_path)"
+BZOUTDIR="$(${BAZEL_EXE} info output_base)"
 BZOUTDIR_REL=$(abs2rel "${BZOUTDIR}" "${OUT_ABS}" )
 
 cat >${OUT} <<EOF
@@ -427,7 +427,11 @@ test/tools/schema_validator
 bazel-bin
 EOF
 
-for dir in $(ls -d1 ${BZOUTDIR_REL}/k8-dbg/bin/external/*) ; do
+for dir in $(find ${BZOUTDIR_REL} -name include -print) ; do
 	echo >>"${OUT}" "${dir}"
 done
+echo >>"${OUT}" "${BZOUTDIR_REL}/external/com_envoyproxy_protoc_gen_validate"
+
+# Add a blank line at the end, or the last include-dir is not taken into account
+echo >>"${OUT}"
 
